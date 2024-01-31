@@ -5,13 +5,16 @@ async function seedTodos(sql) {
   try {
     await sql`CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`;
 
+    console.log(`UUID extension created or already exists`);
+
     const createTable = await sql`
-    CREATE TABLE IF NOT EXISTS todos (
-      id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-      priority VARCHAR(255) NOT NULL,
-      status VARCHAR(255) NOT NULL,
-      title VARCHAR(255) NOT NULL
-    );
+      CREATE TABLE IF NOT EXISTS todos (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        priority VARCHAR(255) NOT NULL,
+        status VARCHAR(255) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `;
 
     console.log(`Created "todos" table`);
@@ -19,10 +22,10 @@ async function seedTodos(sql) {
     const insertedTodos = await Promise.all(
       todos.map(
         (todo) => sql`
-        INSERT INTO todos (priority, status, title)
-        VALUES (${todo.priority}, ${todo.status}, ${todo.title})
-        ON CONFLICT (id) DO NOTHING;
-      `
+          INSERT INTO todos (priority, status, title)
+          VALUES (${todo.priority}, ${todo.status}, ${todo.title})
+          ON CONFLICT (id) DO NOTHING;
+        `
       )
     );
 
@@ -30,10 +33,10 @@ async function seedTodos(sql) {
 
     return {
       createTable,
-      todo: insertedTodos,
+      todos: insertedTodos,
     };
   } catch (error) {
-    console.error("Error seeding todos:", error);
+    console.error("Error seeding todos:", error.message);
     throw error;
   }
 }

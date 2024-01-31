@@ -8,7 +8,7 @@ export async function fetchTodos() {
   try {
     console.log("Fetching revenue data...");
     const data = await sql`
-    SELECT * FROM todos
+    SELECT * FROM todos ORDER BY created_at ASC
     `;
 
     return data as Todo[];

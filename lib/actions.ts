@@ -2,27 +2,12 @@
 
 import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
+import { FormSchema, State } from "@/lib/definitions";
 
 const sql = neon(process.env.DATABASE_URL || "");
 
-const FormSchema = z.object({
-  id: z.string({ invalid_type_error: "Please select todo." }),
-  status: z.enum(["todo", "in progress", "done", "canceled"]),
-  priority: z.enum(["low", "medium", "high"]),
-  title: z.string(),
-});
-
 const EditTodo = FormSchema.omit({ id: true });
-
-export type State = {
-  errors?: {
-    status?: string[];
-    priority?: string[];
-    title?: string[];
-  };
-  message?: string | null;
-};
+const CreateTodo = FormSchema.omit({ id: true });
 
 export async function editTodo(id: string, formData: FormData) {
   const validatedFields = EditTodo.safeParse({
@@ -30,9 +15,6 @@ export async function editTodo(id: string, formData: FormData) {
     priority: formData.get("priority"),
     title: formData.get("title"),
   });
-
-  console.log(id);
-  console.log(formData.get("status"));
 
   if (!validatedFields.success) {
     return {
@@ -61,6 +43,34 @@ export async function deleteTodo(id: string) {
     await sql`DELETE FROM todos WHERE id = ${id}`;
   } catch (error) {
     return { message: "Database Error: Failed to Delete Todo" };
+  }
+
+  revalidatePath("/");
+}
+
+export async function createTodo(formData: FormData) {
+  const validatedFields = CreateTodo.safeParse({
+    status: formData.get("status"),
+    priority: formData.get("priority"),
+    title: formData.get("title"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Create Todo.",
+    };
+  }
+
+  const { status, priority, title } = validatedFields.data;
+
+  try {
+    await sql`
+    INSERT INTO todos (id, status, priority, title)
+    VALUES (uuid_generate_v4(), ${status}, ${priority}, ${title})
+    `;
+  } catch (error) {
+    return { message: "Database Error: Failed to Create Todo" };
   }
 
   revalidatePath("/");

@@ -1,8 +1,7 @@
 "use client";
 
-import { Todo, TodoForm } from "@/lib/definitions";
+import { Todo } from "@/lib/definitions";
 import { editTodo } from "@/lib/actions";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import {
@@ -19,17 +18,21 @@ import {
   AlertDialogFooter,
 } from "./ui/alert-dialog";
 
-export default function EditTodoForm({ todo }: { todo: TodoForm }) {
+export default function EditTodoForm({ todo }: { todo: Todo }) {
   const editTodoWithId = editTodo.bind(null, todo.id);
 
   return (
     <form action={editTodoWithId} className="space-y-2">
-      <Input placeholder="Please enter a title" defaultValue={todo.title} />
+      <Input
+        name="title"
+        placeholder="Please enter a title"
+        defaultValue={todo.title}
+      />
 
       <div className="flex justify-between">
         <div>
           <Label htmlFor="status">Status</Label>
-          <Select defaultValue={todo.status}>
+          <Select name="status" defaultValue={todo.status}>
             <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="Select a status" />
             </SelectTrigger>
@@ -44,7 +47,7 @@ export default function EditTodoForm({ todo }: { todo: TodoForm }) {
 
         <div>
           <Label htmlFor="priority">Priority</Label>
-          <Select defaultValue={todo.priority}>
+          <Select name="priority" defaultValue={todo.priority}>
             <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="Select a priority" />
             </SelectTrigger>

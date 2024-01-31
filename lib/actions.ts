@@ -2,7 +2,7 @@
 
 import { neon } from "@neondatabase/serverless";
 import { revalidatePath } from "next/cache";
-import { FormSchema, State } from "@/lib/definitions";
+import { FormSchema } from "@/lib/definitions";
 
 const sql = neon(process.env.DATABASE_URL || "");
 
